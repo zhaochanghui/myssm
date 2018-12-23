@@ -1,0 +1,392 @@
+第一天：搭建环境
+初始化项目后u，写一个控制器，一个方法，作为第一个页面
+配置数据库，application.properties中：
+
+spring.datasource.url=jdbc:mysql://123.207.234.226:3306/test
+spring.datasource.username=zch
+spring.datasource.password=999999,,
+jdbc.DriverClassName=com.mysql.cj.jdbc.Driver
+spring.datasource.max-idle=10
+spring.datasource.max-wait=10000
+spring.datasource.min-idle=5
+spring.datasource.initial-size=5
+
+参照: https://www.cnblogs.com/liangblog/p/5228548.html
+
+
+2.views文件，默认在 项目目录\src\main\resources\templates下，根据新建项目时选的模板文件
+的不同，后缀也不同，比如选的freemarker，后缀默认是ftl,要修改默认后缀，例子，在
+application.properties中：
+## 页面默认前缀目录
+#spring.mvc.view.prefix=/
+## 响应页面默认后缀
+spring.freemarker.suffix=.html
+
+3.查询记录(dao,mapper,service等的编写)
+参考：https://blog.csdn.net/alantuling_jt/article/details/54893383
+
+2018-11-6
+https://www.cnblogs.com/lxcmyf/p/5720796.html
+
+Java中list对象的三种遍历方式
+1.增强for循环
+
+for(String str : list) {//其内部实质上还是调用了迭代器遍历方式，这种循环方式还有其他限制，不建议使用。
+    System.out.println(str);
+}
+2.普通for循环
+
+for( int i = 0 ; i < list.size() ; i++) {//内部不锁定，效率最高，但在多线程要考虑并发操作的问题。
+    System.out.println(list.get(i));
+}
+3.迭代器遍历
+
+Iterator<String> iter = list.iterator();
+while(iter.hasNext()){  //执行过程中会执行数据锁定，性能稍差，若在循环过程中要去掉某个元素只能调用iter.remove()方法。
+    System.out.println(iter.next());
+}
+
+
+
+https://www.cnblogs.com/qlqwjy/p/7237992.html
+Freemarker list 的简单使用
+freemarker list (长度,遍历,下标,嵌套,排序)
+
+1. freemarker获取list的size ：
+
+
+
+Java
+
+ArrayList<String> list = new ArrayList<String>();
+
+
+Freemaker
+
+${list?size}
+
+
+
+
+2. list的遍历：
+<#list animals as being>
+
+    <tr>
+
+        <td>${being.name}${being.price}<td>
+
+    </tr>
+
+</#list>
+
+
+3. 遍历MAP
+
+
+ <#list map?keys as k>
+
+    <option value="${k}">${map[k]}</option>
+
+</#list>
+
+
+4.list遍历中的下标序号：
+
+_index是list的一个属性
+
+<#list list as a>
+
+     ${a_index}
+
+</#list>
+
+
+
+5.取LIST中第i个元素的值
+
+${list[i]}
+
+嵌套时前面要有括号，如下，将字符串变成list，然后取第i个元素的值
+
+ ${(str?split(","))[i]}
+
+
+
+6. list的嵌套：
+
+<#list jsskList as jsskVO>
+
+   <#list kcList as kcVO>
+
+           <#if kcVO.kch=jsskVO.kch> （kcVO里有编号和名称，而jsskVO里只有编号）
+
+                  ${kcVO.kcm}
+
+           </#if>
+
+   </#list>
+
+</#list>
+
+
+
+7. list排序：
+
+      升序 .sort_by()
+
+<#list list?sort_by("字段") as x>
+
+</#list>
+
+
+
+
+     降序 .sort_by()?reverse
+
+<#list list?sort_by("字段")?reverse as x>
+
+</#list>
+
+
+8.item_has_next,size使用：
+
+
+
+<#list userList as user>
+
+  <#if !user_has_next>
+   共有${userList?size}最后一个用户是:${user.userName}
+  </#if>
+</#list>
+
+
+
+2018-11-07:
+mybatis mapper接口中使用@select 注解 @select中使用模糊查询like
+https://blog.csdn.net/weixin_38570967/article/details/80753489
+Parameter index out of range (1 > number of parameters, which is 0)这个错误
+
+正确示例：
+1
+    @Select("SELECT  * FROM shop WHERE shop.name_text LIKE CONCAT('%',#{0},'%')  ")
+    public List<Shop> selectByName(String name_text);
+
+
+centos7+tomcat部署JavaWeb项目超详细步骤
+https://www.cnblogs.com/xiaohu1218/p/7233162.html
+我们平时访问的网站大多都是发布在云服务器上的，比如阿里云、腾讯云等。对于新手，尤其是没有接触过linux系统的人而言是比较有困难的，而且至今使用云服务器也是有成本的，很多时候我们可以通过虚拟机自己搭建一个测试服务器来运行我们的JavaWeb项目。这里我就从头到尾开始详细的介绍一下如何部署javaWeb项目到centos7上。
+
+总体分为三部分：1、java环境。2、tomcat环境。3、JavaWeb项目部署
+
+一、安装java环境
+
+centos7安装java环境比较简单，我是通过virtualBox安装的最小的centos7，安装完毕后设置好IP，要能够访问外网，我上一篇文章里详细讲了如何通过centos7设置IP访问外网。好了，废话不多说，直接上命令：
+
+yum -y install java-1.8.0-openjdk java-1.8.0-openjdk-devel
+
+yum命令需要联网 该操作就是从网上下载jdk8到你的centos7并且安装到默认目录。
+
+我们在Windows系统内用eclipse开发还需要设置JAVA_HOME、CLASSPATH、PATH环境变量，同样的在centos7里面也一样，安装完毕之后，
+
+将下面的三行添加到 /etc/profile 中：
+
+export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.121-0.b13.el7_3.x86_64
+
+export CLASSPATH=.:$JAVA_HOME/jre/lib/rt.jar:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+
+export PATH=$PATH:$JAVA_HOME/bin
+
+保存关闭后，执行：source /etc/profile #让设置立即生效。
+
+这里稍微说明一下/etc/profile文件就是centos7的环境变量配置文件。这个文件是每个用户登录时都会运行的环境变量设置，如果仅仅是修改是不会立即生效的，需要重新登录的时候才能生效，通过命令：source /etc/profile可以让刚才的设置立即生效。
+
+至此，java环境安装完毕，和windows下一样，运执行命令：java -version
+
+会出现以下信息：
+
+openjdk version "1.8.0_121"
+
+OpenJDK Runtime Environment (build 1.8.0_121-b13)
+
+OpenJDK 64-Bit Server VM (build 25.121-b13, mixed mode)
+
+说明java环境安装成功！
+
+二、安装tomcat环境
+
+总体来说这个比较简单就是下载压缩包、解压缩、运行。和Windows一样。具体步骤如下：
+
+下载linux下的Tomcat压缩包 apache-tomcat-8.5.13.tar.gz
+
+放到home下（目录随意，可以自己新建一个文件夹） 解压缩
+
+执行命令：tar -zxvf apache-tomcat-8.5.13.tar.gz
+
+然后就会多了一个apache-tomcat-8.5.13的文件夹，其实这样tomcat就相当于安装成功了，是不是很简单，但是要运行它还需要一些操作。
+
+1、启动tomcat
+
+执行命令：/home/apache-tomcat-8.5.13/bin/startup.sh
+
+2、开发8080端口
+
+firewall-cmd --zone=public --add-port=8080/tcp --permanent
+
+说一下这一句的意思吧，因为centos7 已经更改了防火墙策略，所以使用这种方式来打开端口
+
+--zone #作用域
+
+--add-port=8080/tcp #添加端口，格式为：端口/通讯协议
+
+--permanent #永久生效，没有此参数重启后失效
+
+重启防火墙：firewall-cmd --reload
+
+3、验证
+
+可以在Windows下通过输入虚拟机的ip地址来访问例如：192.168.1.100:8080
+
+显示了tomcat的欢迎页，说明了tomcat已经成功运行了。
+
+三、部署JavaWeb项目
+
+linux里使用的是war包来部署的，所以我们要把项目打包成war包，操作如下
+
+file-export类型选择WAR file
+
+
+之后把生成的war包复制到centos7中。
+
+tomcat部署JavaWeb项目分为下面的步骤：
+
+1、删除tomcat按照目录的ROOT文件夹下的所有文件
+
+2、把war包复制到ROOT文件下面，解压缩：jar -xvf xxxx.war;
+
+3、结束所有的java进程：ps -e|grep java|awk '{print "kill -9 "$1}'|sh
+
+4、启动tomcat：sh tomcat目录/bin/startup.sh;或者是进入到tomcat的bin目录下执行：./startup.sh
+
+5、访问：在主机电脑通过浏览器访问192.168.1.100:8080(centos的Ip和端口号)，就可以打开项目的开始页面。
+
+后续内容持续更新，如果你也在学习技术，或者你想要成为全栈工程师，可以关注一下下哈。不定期更新java、框架、centos等内容。O(∩_∩)O
+
+遇到问题可以评论噢，我会第一时间解答的。
+
+
+五、打包部署
+在项目根目录下（即包含pom.xml的目录），在命令行里输入：
+mvn clean package即可，或者执行mvn install package
+也行 等待打包完成，出现[INFO] BUILD SUCCESS即为打包成功。
+然后把target目录下的war包放到tomcat的webapps目录下，启动tomcat，即可自动解压部署。
+最后在浏览器中输入
+
+http://localhost:[端口号]/[打包项目名]/
+
+发布成功
+
+
+
+2018-11-11:
+在java中我们通常可以这样获取客户端ip地址：
+https://www.cnblogs.com/aoshiguchen/p/6707173.html
+
+request.getRemoteAddr()
+
+
+
+但是这个方法有个弊端，就是如果对方使用了反向代理，那么这个方法获取到的永远都是反向代理服务器的ip，而并非用户的真实ip。这样也能达到禁止访问的目的，但是对于已经发生的恶意入侵，我们却无法定位到真实的用户主机。
+
+
+
+当你遇到类似的问题时，那么下面的代码就能够很好的帮助你。
+import  org.apache.commons.lang.StringUtils;
+
+      public static String getClientIP(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (StringUtils.isNotEmpty(ip) && !"unKnown".equalsIgnoreCase(ip)) {
+            // 多次反向代理后会有多个ip值，第一个ip才是真实ip
+            int index = ip.indexOf(",");
+            if (index != -1) {
+                return ip.substring(0, index);
+            } else {
+                return ip;
+            }
+        }
+        ip = request.getHeader("X-Real-IP");
+        if (StringUtils.isNotEmpty(ip) && !"unKnown".equalsIgnoreCase(ip)) {
+            return ip;
+        }
+        return request.getRemoteAddr();
+    }
+分类: 码
+
+
+
+谷歌的Gson:
+https://blog.csdn.net/demonliuhui/article/details/52949079
+https://github.com/google/gson
+
+//list转换为json
+Gson gson = new Gson();
+List<Person> persons = new ArrayList<Person>();
+String str = gson.toJson(persons);
+
+4
+//json转换为list
+Gson gson = new Gson();
+List<Person> persons = gson.fromJson(str, new TypeToken<List<Person>>(){}.
+getType());
+
+
+
+
+报错：
+org.apache.commons.lang.StringUtils的jar包是什么
+注意版本：我用的是3的，我这样引入： import org.apache.commons.lang3.StringUtils;
+我的maven: <dependency>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-lang3</artifactId>
+                    <version>3.0</version>
+                </dependency>
+
+
+2018-11-18:
+网站ico图片下载：http://sc.chinaz.com/tubiao/180919191600.htm#down
+
+2018-11-19:
+Sublime Text增加Build system类型，打造一个全能IDE
+https://www.cnblogs.com/picaso/p/3337866.html
+Sublime text2是一款非常方便的文本编辑器，现在我基本上不用IDE去编写代码，一般都是在Sublime text2中编辑，当然，这里无法执行、debug是软肋，于是上网找了下资料，可以把添加Sublime text的build类型。
+
+1、Tools 》 build system  >   new build system
+
+2、代码如下
+
+{
+    "cmd": ["D:\\wamp\\bin\\php\\php5.3.13\\php.exe", "$file"],
+    "file_regex": "^.+ in (.+) on line ([0-9]+)",
+    "selector": "source.php" 
+}
+然后就可以Ctrl+B执行PHP代码了（一旦出错，双击错误即可定位出错所在行）
+
+ 
+From：http://www.moreofless.co.uk/sublime-text-php-build-system
+
+
+
+数据表：
+   CREATE TABLE `user` (
+     `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+     `name` varchar(32) NOT NULL default '',
+     `pwd` varchar(32) NOT NULL,
+     `age` int(11) NOT NULL default 0,
+     `nickname` varchar(32) DEFAULT NULL,
+     `head` varchar(128) NOT NULL default '',
+     `work` varchar(128) NOT NULL default '',
+     `addtime` varchar(32) NOT NULL,
+     PRIMARY KEY (`id`)
+     ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+
+登陆模板：
+http://www.mycodes.net/190/10098.htm
